@@ -3,6 +3,7 @@ import { StoreContext } from '../../context/StoreContext';
 
 import FoodItem from '../FoodItem/FoodItem';
 import "./FoodDisplay.css";
+import BASE_URL from '../../config';
 
 const FoodDisplay = ({ category }) => {
   const { menuItems } = useContext(StoreContext);
@@ -19,7 +20,7 @@ const FoodDisplay = ({ category }) => {
                 name={item.name}
                 description={item.description}
                 price={item.price}
-                image={item.image}
+                image={BASE_URL+'/'+item.image}
               />
             )
           }

@@ -2,14 +2,12 @@ import { createContext, useEffect, useState } from 'react';
 
 import axiosInstance from '../api';
 
-import { food_list } from '../assets/assets';
-
 export const StoreContext = createContext(null)
 
 const StoreContextProvider = (props) => {
   const [cartItems, setCartItems] = useState({});
   const [menuItems, setMenuItems] = useState([]);
-  const [categories, setCategories] = useState([])
+  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
     const fetchMenuItems = async () => {
@@ -48,7 +46,7 @@ const StoreContextProvider = (props) => {
     let totalAmount = 0;
     for(const item in cartItems){
       if(cartItems[item]>0){
-        let itemInfo = food_list.find((product) => product._id===item);
+        let itemInfo = menuItems.find((product) => product.id==item);
         totalAmount += itemInfo.price*cartItems[item];
       } 
     }
@@ -56,7 +54,7 @@ const StoreContextProvider = (props) => {
   }
 
   const contextValue = {
-    food_list, menuItems, categories, cartItems, setCartItems, addToCart, removeFromCart, getTotalCartAmount
+    menuItems, categories, cartItems, setCartItems, addToCart, removeFromCart, getTotalCartAmount
   }
   return (
     <StoreContext.Provider value={contextValue}>

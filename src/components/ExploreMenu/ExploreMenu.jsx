@@ -1,10 +1,10 @@
 import './ExploreMenu.css';
-import { menu_list } from '../../assets/assets';
 import { useContext } from 'react';
 import { StoreContext } from '../../context/StoreContext';
+import BASE_URL from '../../config';
 
 const ExploreMenu = ({ category, setCategory }) => {
-  const { categories } = useContext(StoreContext)
+  const { categories } = useContext(StoreContext);
   return (
     <div className='explore-menu' id='explore-menu'>
       <h1>Explore our menu</h1>
@@ -27,7 +27,7 @@ const ExploreMenu = ({ category, setCategory }) => {
             >
               <img
                 className={category === item.name ? 'active' : ''}
-                src={item.image}
+                src={BASE_URL+"/"+item.image}
                 alt='/'
               />
               <p>{item.name}</p>

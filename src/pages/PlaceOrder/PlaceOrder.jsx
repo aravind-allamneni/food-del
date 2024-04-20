@@ -38,7 +38,7 @@ const PlaceOrder = () => {
             </div>
             <div className="cart-total-details">
               <b>Total</b>
-              <b>₹ {getTotalCartAmount()+getTotalCartAmount()?50:0}</b>
+              <b>₹ {getTotalCartAmount()+(getTotalCartAmount()?50:0)}</b>
             </div>
           </div>
           <button>Proceed to Payment</button>
