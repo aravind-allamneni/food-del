@@ -68,7 +68,7 @@ const LoginPopup = ({ setShowLogin }) => {
         localStorage.setItem("token", response.data.access_token);
         setShowLogin(false);
       } catch (error) {
-        toast.error(`Failure: User not created | ${error}`);
+        toast.error(`Failure: User not loggedin | ${error}`);
       }
     }
   };
