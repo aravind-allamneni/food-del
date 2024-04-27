@@ -5,9 +5,11 @@ import axiosInstance from "../../api";
 import BASE_URL from "../../config";
 import { toast } from "react-toastify";
 import { StoreContext } from "../../context/StoreContext";
+import * as jwt_decode from "jwt-decode";
 
 const LoginPopup = ({ setShowLogin }) => {
-  const { setToken } = useContext(StoreContext);
+  const { token, setToken, setCartItems, userId, setUserId, fetchCartItems } =
+    useContext(StoreContext);
   const [currentState, setCurrentState] = useState("Login");
   const [data, setData] = useState({
     name: "",
@@ -24,8 +26,6 @@ const LoginPopup = ({ setShowLogin }) => {
 
   const onSubmitHandler = async (event) => {
     event.preventDefault();
-    console.log(`Data: ${JSON.stringify(data)}`);
-    console.log(`State: ${currentState}`);
     if (currentState === "Sign Up") {
       // create a new account
       try {
@@ -61,11 +61,16 @@ const LoginPopup = ({ setShowLogin }) => {
           toast.error(`Failure: User not created | ${response.status}`);
           console.log(`User not created`);
         }
-        console.log(`Response: ${JSON.stringify(response.data)}`);
+        // console.log(`Response: ${JSON.stringify(response.data)}`);
         toast.success("Success: Logged in");
         // close pop up and redirect user to home page
         setToken(response.data.access_token);
         localStorage.setItem("token", response.data.access_token);
+        const decoded_token = jwt_decode.jwtDecode(response.data.access_token);
+        setUserId(decoded_token.user_id);
+        setCartItems(
+          fetchCartItems(response.data.access_token, decoded_token.user_id)
+        );
         setShowLogin(false);
       } catch (error) {
         toast.error(`Failure: User not loggedin | ${error}`);

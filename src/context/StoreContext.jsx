@@ -1,4 +1,5 @@
 import { createContext, useEffect, useState } from "react";
+import * as jwt_decode from "jwt-decode";
 
 import axiosInstance from "../api";
 
@@ -9,6 +10,24 @@ const StoreContextProvider = (props) => {
   const [menuItems, setMenuItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [token, setToken] = useState("");
+  const [userId, setUserId] = useState(null);
+
+  const fetchCartItems = async (tk, id) => {
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${tk}`,
+        },
+      };
+      const response = await axiosInstance.get(`/users/${id}/cart`, config);
+      console.log(`response: ${JSON.stringify(response)}`);
+      console.log(`response.data: ${JSON.stringify(response.data)}`);
+      setCartItems(response.data);
+      console.log(`CartItems: ${JSON.stringify(cartItems)}`);
+    } catch (error) {
+      console.error(`Error fetching cartItems for ${id}: ${error}`);
+    }
+  };
 
   useEffect(() => {
     const fetchMenuItems = async () => {
@@ -29,6 +48,9 @@ const StoreContextProvider = (props) => {
     };
     if (localStorage.getItem("token")) {
       setToken(localStorage.getItem("token"));
+      const decoded_token = jwt_decode.jwtDecode(localStorage.getItem("token"));
+      setUserId(decoded_token.user_id);
+      fetchCartItems(localStorage.getItem("token"), decoded_token.user_id);
     }
     fetchCategories();
     fetchMenuItems();
@@ -40,6 +62,7 @@ const StoreContextProvider = (props) => {
     } else {
       setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] + 1 }));
     }
+    console.log(`cartItems: ${JSON.stringify(cartItems)}`);
   };
 
   const removeFromCart = (itemId) => {
@@ -51,7 +74,7 @@ const StoreContextProvider = (props) => {
     for (const item in cartItems) {
       if (cartItems[item] > 0) {
         let itemInfo = menuItems.find((product) => product.id == item);
-        totalAmount += itemInfo.price * cartItems[item];
+        if (itemInfo) totalAmount += itemInfo.price * cartItems[item];
       }
     }
     return totalAmount;
@@ -67,6 +90,9 @@ const StoreContextProvider = (props) => {
     getTotalCartAmount,
     token,
     setToken,
+    userId,
+    setUserId,
+    fetchCartItems,
   };
   return (
     <StoreContext.Provider value={contextValue}>
