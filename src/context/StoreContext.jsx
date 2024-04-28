@@ -40,7 +40,6 @@ const StoreContextProvider = (props) => {
     };
     try {
       const response = await axiosInstance.get(`/users/${id}`, config);
-      console.log(`Response: ${JSON.stringify(response)}`);
       if ((response.status < 200) | (response.status > 299)) {
         setToken("");
         setLoggedInUser({
@@ -54,9 +53,9 @@ const StoreContextProvider = (props) => {
         // console.log(`response: ${response.data}`);
       } else {
         // console.log(`response: ${JSON.stringify(response)}`);
-        console.log(
-          `response.data.cart: ${JSON.stringify(response.data.cart)}`
-        );
+        // console.log(
+        //   `response.data.cart: ${JSON.stringify(response.data.cart)}`
+        // );
         setLoggedInUser({
           id: response.data.id,
           name: response.data.name,
@@ -112,7 +111,6 @@ const StoreContextProvider = (props) => {
   }, [loggedInUser, cartItems]);
 
   const addToCart = async (itemId) => {
-    // check if the item is in cartItems
     let new_cart = {};
     if (!cartItems[itemId]) {
       new_cart = { ...cartItems, [itemId]: 1 };
@@ -141,8 +139,34 @@ const StoreContextProvider = (props) => {
     }
   };
 
-  const removeFromCart = (itemId) => {
-    setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] - 1 }));
+  const removeFromCart = async (itemId) => {
+    let new_cart = {};
+    // console.log(`cartItems: ${cartItems}`);
+    new_cart = { ...cartItems, [itemId]: cartItems[itemId] - 1 };
+    if (new_cart[itemId] == 0) {
+      delete new_cart[itemId];
+    }
+    // console.log(`new_cart: ${JSON.stringify(new_cart)}`);
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    try {
+      const response = await axiosInstance.post(
+        `/users/${loggedInUser.id}/cart`,
+        new_cart,
+        config
+      );
+      if ((response.status > 199) & (response.status < 300)) {
+        setCartItems(response.data);
+        toast(`Removed from cart.`);
+      } else {
+        toast(`Unable to fetch cart items. ${response.status}`);
+      }
+    } catch (error) {
+      toast(`Unable to fetch cart items. ${error}`);
+    }
   };
 
   const getTotalCartAmount = () => {
