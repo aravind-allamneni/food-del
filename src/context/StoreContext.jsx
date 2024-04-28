@@ -2,6 +2,7 @@ import { createContext, useEffect, useState } from "react";
 import * as jwt_decode from "jwt-decode";
 
 import axiosInstance from "../api";
+import { toast } from "react-toastify";
 
 export const StoreContext = createContext(null);
 
@@ -20,10 +21,8 @@ const StoreContextProvider = (props) => {
         },
       };
       const response = await axiosInstance.get(`/users/${id}/cart`, config);
-      console.log(`response: ${JSON.stringify(response)}`);
-      console.log(`response.data: ${JSON.stringify(response.data)}`);
+      // console.log(`response.data: ${JSON.stringify(response.data)}`);
       setCartItems(response.data);
-      console.log(`CartItems: ${JSON.stringify(cartItems)}`);
     } catch (error) {
       console.error(`Error fetching cartItems for ${id}: ${error}`);
     }
@@ -56,13 +55,38 @@ const StoreContextProvider = (props) => {
     fetchMenuItems();
   }, []);
 
-  const addToCart = (itemId) => {
+  useEffect(() => {
+    console.log(`userId: ${userId}; cartItems: ${JSON.stringify(cartItems)}`);
+  }, [cartItems]);
+
+  const addToCart = async (itemId) => {
+    // check if the item is in cartItems
+    let new_cart = {};
     if (!cartItems[itemId]) {
-      setCartItems((prev) => ({ ...prev, [itemId]: 1 }));
+      new_cart = { ...cartItems, [itemId]: 1 };
     } else {
-      setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] + 1 }));
+      new_cart = { ...cartItems, [itemId]: cartItems[itemId] + 1 };
     }
-    console.log(`cartItems: ${JSON.stringify(cartItems)}`);
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    try {
+      const response = await axiosInstance.post(
+        `/users/${userId}/cart`,
+        new_cart,
+        config
+      );
+      if ((response.status > 199) & (response.status < 300)) {
+        setCartItems(response.data);
+        toast(`Added to cart.`);
+      } else {
+        toast(`Unable to fetch cart items. ${response.status}`);
+      }
+    } catch (error) {
+      toast(`Unable to fetch cart items. Try again`);
+    }
   };
 
   const removeFromCart = (itemId) => {
