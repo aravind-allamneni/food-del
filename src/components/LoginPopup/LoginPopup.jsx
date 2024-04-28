@@ -8,7 +8,7 @@ import { StoreContext } from "../../context/StoreContext";
 import * as jwt_decode from "jwt-decode";
 
 const LoginPopup = ({ setShowLogin }) => {
-  const { token, setToken, setCartItems, userId, setUserId, fetchCartItems } =
+  const { setToken, setCartItems, fetchCartItems, getCurrentUser } =
     useContext(StoreContext);
   const [currentState, setCurrentState] = useState("Login");
   const [data, setData] = useState({
@@ -67,7 +67,7 @@ const LoginPopup = ({ setShowLogin }) => {
         setToken(response.data.access_token);
         localStorage.setItem("token", response.data.access_token);
         const decoded_token = jwt_decode.jwtDecode(response.data.access_token);
-        setUserId(decoded_token.user_id);
+        await getCurrentUser(response.data.access_token, decoded_token.user_id);
         setCartItems(
           fetchCartItems(response.data.access_token, decoded_token.user_id)
         );

@@ -101,6 +101,15 @@
   cursor: pointer;
 }
 
+.nav-profile-dropdown .user-name{
+  padding: 10px;
+  font-weight: 600;
+}
+
+.nav-profile-dropdown .user-name img{
+  padding-right: 10px;
+}
+
 .nav-profile-dropdown img{
   width: 20px;
 }

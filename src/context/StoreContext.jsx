@@ -11,7 +11,12 @@ const StoreContextProvider = (props) => {
   const [menuItems, setMenuItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [token, setToken] = useState("");
-  const [userId, setUserId] = useState(null);
+  const [loggedInUser, setLoggedInUser] = useState({
+    id: null,
+    name: "",
+    email: "",
+    phone_number: "",
+  });
 
   const fetchCartItems = async (tk, id) => {
     try {
@@ -21,10 +26,57 @@ const StoreContextProvider = (props) => {
         },
       };
       const response = await axiosInstance.get(`/users/${id}/cart`, config);
-      // console.log(`response.data: ${JSON.stringify(response.data)}`);
       setCartItems(response.data);
     } catch (error) {
       console.error(`Error fetching cartItems for ${id}: ${error}`);
+    }
+  };
+
+  const getCurrentUser = async (tk, id) => {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${tk}`,
+      },
+    };
+    try {
+      const response = await axiosInstance.get(`/users/${id}`, config);
+      console.log(`Response: ${JSON.stringify(response)}`);
+      if ((response.status < 200) | (response.status > 299)) {
+        setToken("");
+        setLoggedInUser({
+          id: null,
+          name: "",
+          email: "",
+          phone_number: "",
+        });
+        // console.log(`response.status: ${response.status}, removing token`);
+        localStorage.removeItem("token");
+        // console.log(`response: ${response.data}`);
+      } else {
+        // console.log(`response: ${JSON.stringify(response)}`);
+        console.log(
+          `response.data.cart: ${JSON.stringify(response.data.cart)}`
+        );
+        setLoggedInUser({
+          id: response.data.id,
+          name: response.data.name,
+          email: response.data.email,
+          phone_number: response.data.phone_number,
+        });
+        setCartItems(response.data.cart);
+        // setLoggedInUser(response.data);
+      }
+    } catch (error) {
+      localStorage.removeItem("token");
+      setCartItems({});
+      setToken("");
+      setLoggedInUser({
+        id: null,
+        name: "",
+        email: "",
+        phone_number: "",
+        cart: {},
+      });
     }
   };
 
@@ -48,16 +100,16 @@ const StoreContextProvider = (props) => {
     if (localStorage.getItem("token")) {
       setToken(localStorage.getItem("token"));
       const decoded_token = jwt_decode.jwtDecode(localStorage.getItem("token"));
-      setUserId(decoded_token.user_id);
-      fetchCartItems(localStorage.getItem("token"), decoded_token.user_id);
+      getCurrentUser(localStorage.getItem("token"), decoded_token.user_id);
     }
     fetchCategories();
     fetchMenuItems();
   }, []);
 
   useEffect(() => {
-    console.log(`userId: ${userId}; cartItems: ${JSON.stringify(cartItems)}`);
-  }, [cartItems]);
+    console.log(`loggedInUser: ${JSON.stringify(loggedInUser)}`);
+    console.log(`cartItems: ${JSON.stringify(cartItems)}`);
+  }, [loggedInUser, cartItems]);
 
   const addToCart = async (itemId) => {
     // check if the item is in cartItems
@@ -74,7 +126,7 @@ const StoreContextProvider = (props) => {
     };
     try {
       const response = await axiosInstance.post(
-        `/users/${userId}/cart`,
+        `/users/${loggedInUser.id}/cart`,
         new_cart,
         config
       );
@@ -85,7 +137,7 @@ const StoreContextProvider = (props) => {
         toast(`Unable to fetch cart items. ${response.status}`);
       }
     } catch (error) {
-      toast(`Unable to fetch cart items. Try again`);
+      toast(`Unable to fetch cart items. ${error}`);
     }
   };
 
@@ -114,9 +166,9 @@ const StoreContextProvider = (props) => {
     getTotalCartAmount,
     token,
     setToken,
-    userId,
-    setUserId,
     fetchCartItems,
+    getCurrentUser,
+    loggedInUser,
   };
   return (
     <StoreContext.Provider value={contextValue}>
