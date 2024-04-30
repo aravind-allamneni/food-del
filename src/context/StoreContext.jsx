@@ -105,11 +105,6 @@ const StoreContextProvider = (props) => {
     fetchMenuItems();
   }, []);
 
-  useEffect(() => {
-    console.log(`loggedInUser: ${JSON.stringify(loggedInUser)}`);
-    console.log(`cartItems: ${JSON.stringify(cartItems)}`);
-  }, [loggedInUser, cartItems]);
-
   const addToCart = async (itemId) => {
     let new_cart = {};
     if (!cartItems[itemId]) {
