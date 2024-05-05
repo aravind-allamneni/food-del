@@ -4,6 +4,8 @@ import { StoreContext } from "../../context/StoreContext";
 import axiosInstance from "../../api";
 import { toast } from "react-toastify";
 import BASE_URL from "../../config";
+import useRazorpay from "react-razorpay";
+import { assets } from "../../assets/assets";
 
 const PlaceOrder = () => {
   const {
@@ -14,6 +16,8 @@ const PlaceOrder = () => {
     token,
     loggedInUser,
   } = useContext(StoreContext);
+
+  const [Razorpay] = useRazorpay();
 
   const [address, setAddress] = useState({
     firstname: "",
@@ -33,6 +37,74 @@ const PlaceOrder = () => {
     setAddress((prevAddress) => ({ ...prevAddress, [name]: value }));
   };
 
+  const handlePayment = async (amount, currency, order_id) => {
+    console.log(amount, currency, order_id);
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Enter the Key ID generated from the Dashboard
+      amount: amount, // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+      currency: currency,
+      name: "Brundavan",
+      description: "Test Transaction",
+      image: assets.logo,
+      order_id: order_id, //This is a sample Order ID. Pass the `id` obtained in the response of createOrder().
+      handler: async function (response) {
+        toast("Payment Success: Placing Order");
+        const data = {
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_order_id: response.razorpay_order_id,
+          razorpay_signature: response.razorpay_signature,
+        };
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        try {
+          const response = await axiosInstance.post(
+            `${BASE_URL}/orders/verify_payment`,
+            data,
+            config
+          );
+          if (response.status !== 201) {
+            toast("Unable to place order. Transaction failed");
+          } else {
+            toast("Payment Success: Order Placed");
+          }
+        } catch (error) {
+          console.log(`Order Failed: ${error}`);
+        }
+        // alert(response.razorpay_payment_id);
+        // alert(response.razorpay_order_id);
+        // alert(response.razorpay_signature);
+      },
+      prefill: {
+        name: "Piyush Garg",
+        email: "youremail@example.com",
+        contact: "9999999999",
+      },
+      notes: {
+        address: "Razorpay Corporate Office",
+      },
+      theme: {
+        color: "#3399cc",
+      },
+    };
+
+    const rzp1 = new Razorpay(options);
+
+    rzp1.on("payment.failed", function (response) {
+      alert(response.error.code);
+      alert(response.error.description);
+      alert(response.error.source);
+      alert(response.error.step);
+      alert(response.error.reason);
+      alert(response.error.metadata.order_id);
+      alert(response.error.metadata.payment_id);
+    });
+
+    rzp1.open();
+  };
+
   const placeOrder = async (event) => {
     event.preventDefault();
     let orderItems = [];
@@ -43,6 +115,10 @@ const PlaceOrder = () => {
         orderItems.push(orderItem);
       }
     });
+    if (orderItems.length == 0) {
+      toast("Cart is empty. Add items to cart.");
+      return;
+    }
     let orderData = {
       items: orderItems,
       amount: getTotalCartAmount() + 50,
@@ -74,8 +150,8 @@ const PlaceOrder = () => {
           country: "",
           phone: "",
         });
+        handlePayment(response.data["amount"], "INR", response.data["rz_id"]);
         setCartItems({});
-        console.log(response.data);
       }
     } catch (error) {
       console.log(`Order Failed: ${error}`);
