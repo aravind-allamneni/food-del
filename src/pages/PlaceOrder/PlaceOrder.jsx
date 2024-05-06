@@ -78,12 +78,12 @@ const PlaceOrder = () => {
         // alert(response.razorpay_signature);
       },
       prefill: {
-        name: "Piyush Garg",
-        email: "youremail@example.com",
-        contact: "9999999999",
+        name: loggedInUser ? loggedInUser.name : "",
+        email: loggedInUser ? loggedInUser.email : "",
+        contact: loggedInUser ? loggedInUser.phone_number : "",
       },
       notes: {
-        address: "Razorpay Corporate Office",
+        address: "",
       },
       theme: {
         color: "#3399cc",
@@ -95,11 +95,11 @@ const PlaceOrder = () => {
     rzp1.on("payment.failed", function (response) {
       alert(response.error.code);
       alert(response.error.description);
-      alert(response.error.source);
-      alert(response.error.step);
-      alert(response.error.reason);
-      alert(response.error.metadata.order_id);
-      alert(response.error.metadata.payment_id);
+      // alert(response.error.source);
+      // alert(response.error.step);
+      // alert(response.error.reason);
+      // alert(response.error.metadata.order_id);
+      // alert(response.error.metadata.payment_id);
     });
 
     rzp1.open();
