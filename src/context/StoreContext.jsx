@@ -106,6 +106,10 @@ const StoreContextProvider = (props) => {
   }, []);
 
   const addToCart = async (itemId) => {
+    if (!token) {
+      toast("Please login to add to cart");
+      return;
+    }
     let new_cart = {};
     if (!cartItems[itemId]) {
       new_cart = { ...cartItems, [itemId]: 1 };
