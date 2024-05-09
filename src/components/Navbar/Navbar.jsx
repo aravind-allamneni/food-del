@@ -70,11 +70,11 @@ const Navbar = ({ setShowLogin }) => {
                 ) : (
                   <></>
                 )}
-                <li>
-                  <Link to="/orders">
-                    <img src={assets.bag_icon} alt="" />
-                    <p>Orders</p>
-                  </Link>
+                <li onClick={() => navigate("/orders")}>
+                  {/* <Link to="/orders"> */}
+                  <img src={assets.bag_icon} alt="" />
+                  <p>Orders</p>
+                  {/* </Link> */}
                 </li>
                 <hr />
                 <li onClick={logout}>
