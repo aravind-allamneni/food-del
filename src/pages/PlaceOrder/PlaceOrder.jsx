@@ -1,11 +1,12 @@
 import "./PlaceOrder.css";
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { StoreContext } from "../../context/StoreContext";
 import axiosInstance from "../../api";
 import { toast } from "react-toastify";
 import BASE_URL from "../../config";
 import useRazorpay from "react-razorpay";
 import { assets } from "../../assets/assets";
+import { Navigate, useNavigate } from "react-router-dom";
 
 const PlaceOrder = () => {
   const {
@@ -157,7 +158,12 @@ const PlaceOrder = () => {
       console.log(`Order Failed: ${error}`);
     }
   };
-
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!token | (getTotalCartAmount() == 0)) {
+      navigate("/orders");
+    }
+  }, [cartItems]);
   return (
     <form onSubmit={placeOrder} className="place-order">
       <div className="place-order-left">
